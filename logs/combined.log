@@ -1,0 +1,7 @@
+{"level":"info","message":"MongoDB conectado com sucesso","timestamp":"2025-03-21T22:38:50.325Z"}
+{"level":"error","message":"Cannot read properties of undefined (reading 'validate') - POST /api/users/register","timestamp":"2025-03-21T22:39:01.360Z"}
+{"level":"info","message":"MongoDB conectado com sucesso","timestamp":"2025-03-21T22:41:09.338Z"}
+{"level":"error","message":"Cannot read properties of undefined (reading 'validate') - POST /api/users/register","timestamp":"2025-03-21T22:41:27.544Z"}
+{"level":"info","message":"MongoDB conectado com sucesso","timestamp":"2025-03-21T22:43:59.198Z"}
+{"level":"error","message":"Cannot read properties of undefined (reading 'validate') - POST /api/users/register","timestamp":"2025-03-21T22:44:08.126Z"}
+{"level":"info","message":"MongoDB conectado com sucesso","timestamp":"2025-03-21T22:48:13.449Z"}

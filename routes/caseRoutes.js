@@ -1,13 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const caseController = require('../controllers/caseController');
-const { protect } = require('../middleware/auth');
+const auth = require('../middleware/auth');
+const validate = require('../middleware/validate');
 
-router.post('/cases',protect, caseController.createCase);       // Create
-router.get('/cases', caseController.getCases);          // Read (todos)
-router.get('/cases/:id', caseController.getCaseById);   // Read (por ID)
-router.put('/cases/:id', caseController.updateCase);    // Update
-router.delete('/cases/:id', caseController.deleteCase); // Delete
-
+router.post('/', auth(['perito', 'admin']), validate(caseController.caseSchema), caseController.createCase);
+router.put('/:caseId/status', auth(['perito', 'admin']), caseController.updateCaseStatus);
+router.get('/', auth(), caseController.getCases);
 
 module.exports = router;

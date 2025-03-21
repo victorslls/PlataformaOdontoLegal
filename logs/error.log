@@ -1,0 +1,3 @@
+{"level":"error","message":"Cannot read properties of undefined (reading 'validate') - POST /api/users/register","timestamp":"2025-03-21T22:39:01.360Z"}
+{"level":"error","message":"Cannot read properties of undefined (reading 'validate') - POST /api/users/register","timestamp":"2025-03-21T22:41:27.544Z"}
+{"level":"error","message":"Cannot read properties of undefined (reading 'validate') - POST /api/users/register","timestamp":"2025-03-21T22:44:08.126Z"}

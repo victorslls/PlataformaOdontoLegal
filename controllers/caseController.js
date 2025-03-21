@@ -1,58 +1,64 @@
 const Case = require('../models/Case');
+const ActivityLog = require('../models/ActivityLog');
+const logger = require('../utils/logger');
+const Joi = require('joi');
 
-// Criar um caso (Create)
+const caseSchema = Joi.object({
+  title: Joi.string().min(3).required(),
+  description: Joi.string().min(10).required(),
+  type: Joi.string().valid('acidente', 'identificacao', 'criminal').required(),
+});
+
 exports.createCase = async (req, res) => {
+  const { title, description, type } = req.body;
+
   try {
-    const newCase = new Case(req.body);
+    const newCase = new Case({
+      title,
+      description,
+      type,
+      responsible: req.user.id,
+      createdBy: req.user.id,
+    });
+
     await newCase.save();
+    await ActivityLog.create({ userId: req.user.id, action: 'Caso criado', details: newCase._id });
+
     res.status(201).json(newCase);
   } catch (error) {
-    res.status(500).json({ message: 'Erro ao criar caso', error: error.message });
+    logger.error('Erro ao criar caso:', error);
+    res.status(500).json({ msg: 'Erro no servidor' });
   }
 };
 
-// Recuperar todos os casos (Read)
+exports.updateCaseStatus = async (req, res) => {
+  const { caseId } = req.params;
+  const { status } = req.body;
+
+  try {
+    const updatedCase = await Case.findByIdAndUpdate(caseId, { status }, { new: true });
+    if (!updatedCase) return res.status(404).json({ msg: 'Caso não encontrado' });
+
+    await ActivityLog.create({ userId: req.user.id, action: 'Status do caso atualizado', details: caseId });
+    res.json(updatedCase);
+  } catch (error) {
+    logger.error('Erro ao atualizar caso:', error);
+    res.status(500).json({ msg: 'Erro no servidor' });
+  }
+};
+
 exports.getCases = async (req, res) => {
-  try {
-    const cases = await Case.find().sort({ createdAt: -1 });
-    res.status(200).json(cases);
-  } catch (error) {
-    res.status(500).json({ message: 'Erro ao recuperar casos', error: error.message });
-  }
-};
+  const { status, date } = req.query;
 
-// Recuperar um caso por ID (Read)
-exports.getCaseById = async (req, res) => {
   try {
-    const caseData = await Case.findById(req.params.id);
-    if (!caseData) return res.status(404).json({ message: 'Caso não encontrado' });
-    res.status(200).json(caseData);
-  } catch (error) {
-    res.status(500).json({ message: 'Erro ao recuperar caso', error: error.message });
-  }
-};
+    const filters = {};
+    if (status) filters.status = status;
+    if (date) filters.createdAt = { $gte: new Date(date) };
 
-// Atualizar um caso (Update)
-exports.updateCase = async (req, res) => {
-  try {
-    const updatedCase = await Case.findByIdAndUpdate(req.params.id, req.body, {
-      new: true, // Retorna o documento atualizado
-      runValidators: true, // Valida os dados
-    });
-    if (!updatedCase) return res.status(404).json({ message: 'Caso não encontrado' });
-    res.status(200).json(updatedCase);
+    const cases = await Case.find(filters).populate('responsible', 'name');
+    res.json(cases);
   } catch (error) {
-    res.status(500).json({ message: 'Erro ao atualizar caso', error: error.message });
-  }
-};
-
-// Deletar um caso (Delete)
-exports.deleteCase = async (req, res) => {
-  try {
-    const deletedCase = await Case.findByIdAndDelete(req.params.id);
-    if (!deletedCase) return res.status(404).json({ message: 'Caso não encontrado' });
-    res.status(200).json({ message: 'Caso deletado com sucesso' });
-  } catch (error) {
-    res.status(500).json({ message: 'Erro ao deletar caso', error: error.message });
+    logger.error('Erro ao listar casos:', error);
+    res.status(500).json({ msg: 'Erro no servidor' });
   }
 };

@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const dentalRecordController = require('../controllers/dentalRecordController');
-const { protect } = require('../middleware/auth');
+const auth = require('../middleware/auth');
 
-router.post('/dental-records', protect, dentalRecordController.createDentalRecord);
-router.get('/dental-records', protect, dentalRecordController.searchDentalRecords);
+router.post('/', auth(['perito', 'admin']), dentalRecordController.createDentalRecord);
+router.get('/search', auth(), dentalRecordController.searchDentalRecords);
 
 module.exports = router;

@@ -1,17 +1,29 @@
 const Report = require('../models/Report');
 const ActivityLog = require('../models/ActivityLog');
+const generatePDF = require('../utils/pdfGenerator');
+const logger = require('../utils/logger');
 
 exports.createReport = async (req, res) => {
+  const { caseId, content, attachments } = req.body;
+
   try {
     const report = new Report({
-      caseId: req.body.caseId,
-      description: req.body.description,
-      createdBy: req.user.id,
+      caseId,
+      content,
+      attachments: attachments || [],
+      generatedBy: req.user.id,
     });
+
+    const pdfPath = `${process.env.UPLOAD_DIR}/report-${report._id}.pdf`;
+    await generatePDF({ content }, pdfPath);
+    report.pdfPath = pdfPath;
+
     await report.save();
-    await new ActivityLog({ userId: req.user.id, action: 'Criou laudo', targetId: report._id, targetType: 'Report' }).save();
+    await ActivityLog.create({ userId: req.user.id, action: 'Laudo gerado', details: report._id });
+
     res.status(201).json(report);
   } catch (error) {
-    res.status(500).json({ message: 'Erro ao criar laudo', error: error.message });
+    logger.error('Erro ao gerar laudo:', error);
+    res.status(500).json({ msg: 'Erro no servidor' });
   }
 };

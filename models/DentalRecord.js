@@ -1,14 +1,10 @@
 const mongoose = require('mongoose');
 
 const dentalRecordSchema = new mongoose.Schema({
-  patientName: { type: String }, // Pode ser nulo se não identificado
+  patientName: { type: String },
   isIdentified: { type: Boolean, default: false },
-  dentalData: {
-    odontogram: { type: String }, // Representação do odontograma
-    radiographs: [{ type: String }], // Caminhos de radiografias
-    notes: String,
-  },
-  createdAt: { type: Date, default: Date.now },
-});
+  dentalData: { type: Map, of: String }, // Ex.: {"dente_11": "caries"}
+  registeredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+}, { timestamps: true });
 
 module.exports = mongoose.model('DentalRecord', dentalRecordSchema);
