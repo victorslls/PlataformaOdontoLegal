@@ -58,19 +58,19 @@ exports.forgotPassword = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ msg: 'Usuário não encontrado' });
 
-    const resetToken = crypto.randomBytes(20).toString('hex');
-    user.resetPasswordToken = resetToken;
+    // Gera um código numérico de 6 dígitos
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    user.resetPasswordToken = resetCode; // Reutilizamos o campo existente
     user.resetPasswordExpire = Date.now() + 3600000; // 1 hora
     await user.save();
 
-    const resetUrl = `http://localhost:5000/api/users/reset/${resetToken}`;
     await sendEmail({
       to: user.email,
       subject: 'Redefinição de Senha',
-      text: `Clique para redefinir sua senha: ${resetUrl}`,
+      text: `Seu código de redefinição de senha é: ${resetCode}. Use-o para redefinir sua senha.`,
     });
 
-    res.json({ msg: 'E-mail enviado' });
+    res.json({ msg: 'Código enviado por e-mail' });
   } catch (error) {
     logger.error('Erro ao solicitar redefinição de senha:', error);
     res.status(500).json({ msg: 'Erro no servidor' });
@@ -78,26 +78,36 @@ exports.forgotPassword = async (req, res) => {
 };
 
 exports.resetPassword = async (req, res) => {
-  const { resetToken } = req.params;
-  const { password } = req.body;
+  const { code, password } = req.body; // Mudamos de req.params para req.body
 
   try {
     const user = await User.findOne({
-      resetPasswordToken: resetToken,
-      resetPasswordExpire: { $gt: Date.now() },
+      resetPasswordToken: code, // Agora é o código enviado
+      resetPasswordExpire: { $gt: Date.now() }, // Verifica expiração
     });
 
-    if (!user) return res.status(400).json({ msg: 'Token inválido ou expirado' });
+    if (!user) return res.status(400).json({ msg: 'Código inválido ou expirado' });
 
     user.password = await bcrypt.hash(password, 12);
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
+    user.resetPasswordToken = undefined; // Limpa o código
+    user.resetPasswordExpire = undefined; // Limpa a expiração
     await user.save();
 
-    await ActivityLog.create({ userId: user._id, action: 'Senha redefinida' });
-    res.json({ msg: 'Senha atualizada com sucesso' });
+    res.json({ msg: 'Senha redefinida com sucesso' });
   } catch (error) {
     logger.error('Erro ao redefinir senha:', error);
     res.status(500).json({ msg: 'Erro no servidor' });
+  }
+};
+
+
+// Logout de usuários
+exports.logoutUser = async (req, res) => {
+  try {
+    // Aqui você pode implementar lógica para invalidar o token, se desejar
+    // Exemplo: adicionar token a uma blacklist (opcional)
+    res.status(200).json({ msg: 'Logout realizado com sucesso' });
+  } catch (error) {
+    res.status(500).json({ msg: 'Erro ao realizar logout' });
   }
 };

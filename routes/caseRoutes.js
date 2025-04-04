@@ -3,8 +3,16 @@ const router = express.Router();
 const caseController = require('../controllers/caseController');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
+const Joi = require('joi');
 
-router.post('/', auth(['perito', 'admin']), validate(caseController.caseSchema), caseController.createCase);
+// Schema de validação para criação de caso
+const caseSchema = Joi.object({
+  title: Joi.string().min(3).required(),
+  description: Joi.string().min(10).required(),
+  type: Joi.string().valid('acidente', 'identificacao', 'criminal').required(),
+});
+
+router.post('/', auth(['perito', 'admin']), validate(caseSchema), caseController.createCase);
 router.put('/:caseId/status', auth(['perito', 'admin']), caseController.updateCaseStatus);
 router.get('/', auth(), caseController.getCases);
 

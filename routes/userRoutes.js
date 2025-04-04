@@ -12,10 +12,16 @@ const registerSchema = Joi.object({
   role: Joi.string().valid('admin', 'perito', 'assistente'),
 });
 
+// Schema de validação para login (opcional, mas recomendado)
+const loginSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).required(),
+});
 // Rotas
 router.post('/register', validate(registerSchema), userController.registerUser);
 router.post('/login', userController.loginUser);
 router.post('/forgotpassword', userController.forgotPassword);
-router.put('/reset/:resetToken', userController.resetPassword);
+router.put('/reset/', userController.resetPassword); // Corrigido
+router.post('/logout', userController.logoutUser); // Rota de logout adicionada
 
 module.exports = router;

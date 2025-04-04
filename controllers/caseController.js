@@ -1,13 +1,6 @@
 const Case = require('../models/Case');
 const ActivityLog = require('../models/ActivityLog');
 const logger = require('../utils/logger');
-const Joi = require('joi');
-
-const caseSchema = Joi.object({
-  title: Joi.string().min(3).required(),
-  description: Joi.string().min(10).required(),
-  type: Joi.string().valid('acidente', 'identificacao', 'criminal').required(),
-});
 
 exports.createCase = async (req, res) => {
   const { title, description, type } = req.body;
