@@ -23,5 +23,8 @@ router.post('/login', userController.loginUser);
 router.post('/forgotpassword', userController.forgotPassword);
 router.put('/reset/', userController.resetPassword); // Corrigido
 router.post('/logout', userController.logoutUser); // Rota de logout adicionada
+router.post('/', userController.createCase);
+router.get('/', userController.getCases);
+router.patch('/:caseId/status', userController.updateCaseStatus);
 
 module.exports = router;
